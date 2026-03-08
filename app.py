@@ -58,12 +58,12 @@ def extract_pdf(path):
         pages = [page.extract_text() or "" for page in reader.pages]
     return pages
 
-def call_llm(prompt, model="google/google/gemini-2.5-flash", temperature=0):
+def call_llm(prompt, model="google/gemini-2.5-flash", temperature=0, api_key=None):
     """Call OpenRouter API."""
     import openai
-    key = os.getenv("OPENROUTER_API_KEY")
+    key = api_key or os.getenv("OPENROUTER_API_KEY")
     if not key:
-        raise ValueError("Set OPENROUTER_API_KEY in .env")
+        raise ValueError("No OPENROUTER_API_KEY found. Please provide one.")
 
     client = openai.OpenAI(
         api_key=key,
@@ -114,7 +114,7 @@ def parse_json(text):
 
 
 # ── Tree Builder ──────────────────────────────────────────────────
-def build_tree(pdf_path, sid, model="google/gemini-2.5-flash"):
+def build_tree(pdf_path, sid, model="google/gemini-2.5-flash", api_key=None):
     """Build PageIndex hierarchical tree from a PDF document."""
     emit(sid, "status", {"msg": "📄 Extracting PDF text...", "phase": "extract"})
     pages = extract_pdf(pdf_path)
@@ -163,7 +163,7 @@ Rules:
 - Each node MUST have "nodes" key (empty array [] if leaf)
 - Return ONLY valid JSON, no markdown, no explanation"""
 
-    resp = call_llm(prompt, model=model)
+    resp = call_llm(prompt, model=model, api_key=api_key)
     tree = parse_json(resp)
 
     if not tree or "structure" not in tree or not tree["structure"]:
@@ -187,7 +187,7 @@ Rules:
 
     # Enrich summaries where missing
     emit(sid, "status", {"msg": "📝 Generating summaries...", "phase": "summaries"})
-    _enrich(tree["structure"], pages, model, sid)
+    _enrich(tree["structure"], pages, model, sid, api_key=api_key)
 
     if "doc_name" not in tree or not tree["doc_name"]:
         tree["doc_name"] = os.path.basename(pdf_path)
@@ -206,7 +206,7 @@ def _assign_ids(nodes, counter=None):
             _assign_ids(child, counter)
 
 
-def _enrich(nodes, pages, model, sid):
+def _enrich(nodes, pages, model, sid, api_key=None):
     for node in (nodes if isinstance(nodes, list) else [nodes]):
         if not node.get("summary"):
             s = max(0, node.get("start_index", 1) - 1)
@@ -217,6 +217,7 @@ def _enrich(nodes, pages, model, sid):
                     r = call_llm(
                         f'Summarize this section titled "{node.get("title","")}" in 1-2 sentences:\n\n{txt}\n\nReturn only the summary.',
                         model=model,
+                        api_key=api_key,
                     )
                     node["summary"] = r.strip()
                 except Exception as err:
@@ -227,7 +228,7 @@ def _enrich(nodes, pages, model, sid):
                 node["summary"] = f"Pages {s+1}–{e}"
         emit(sid, "node_done", {"id": node.get("node_id"), "title": node.get("title")})
         for child in node.get("nodes") or []:
-            _enrich(child, pages, model, sid)
+            _enrich(child, pages, model, sid, api_key=api_key)
 
 
 # ── Tree Search (Reasoning Retrieval) ────────────────────────────
@@ -242,7 +243,7 @@ def _find_node(structure, nid):
     return None
 
 
-def tree_search(query, tree, pages, sid, model="google/gemini-2.5-flash"):
+def tree_search(query, tree, pages, sid, model="google/gemini-2.5-flash", api_key=None):
     """Reasoning-based tree search: LLM navigates hierarchy to find relevant sections."""
     structure = tree.get("structure", [])
     if not structure:
@@ -278,7 +279,7 @@ Which sections are most likely to contain the answer? Return JSON:
 Return ONLY valid JSON."""
 
     emit(sid, "status", {"msg": "🧠 Reasoning over tree structure...", "phase": "search"})
-    r1 = parse_json(call_llm(prompt1, model=model))
+    r1 = parse_json(call_llm(prompt1, model=model, api_key=api_key))
     relevant_ids = r1.get("relevant_ids") or r1.get("relevant_sections") or []
 
     search_path = []
@@ -314,7 +315,7 @@ Which subsections are relevant? Return JSON:
 {{
   "relevant_ids": ["id1"]
 }}"""
-            r2 = parse_json(call_llm(prompt2, model=model))
+            r2 = parse_json(call_llm(prompt2, model=model, api_key=api_key))
             sub_ids = r2.get("relevant_ids") or r2.get("relevant_subsections") or []
 
             for sub_id in sub_ids:
@@ -350,7 +351,7 @@ Which subsections are relevant? Return JSON:
     return context, search_path
 
 
-def generate_answer(query, context, path, model="google/gemini-2.5-flash"):
+def generate_answer(query, context, path, model="google/gemini-2.5-flash", api_key=None):
     """Generate a cited answer from retrieved context."""
     ctx = "\n\n".join(context[:5])[:8000]
     path_desc = "\n".join([f"- {p['title']} (Node {p['node_id']})" for p in path])
@@ -371,7 +372,7 @@ Rules:
 - Provide a detailed and comprehensive explanation. Be generous with the amount of information you provide. Use bullet points if applicable to make it more readable and elaborate fully on the user's question.
 
 Answer:"""
-    return call_llm(prompt, model=model)
+    return call_llm(prompt, model=model, api_key=api_key)
 
 
 # ── Routes ────────────────────────────────────────────────────────
@@ -406,9 +407,14 @@ def process(sid):
     if not files:
         return jsonify({"error": "File not found"}), 404
     path = os.path.join(UPLOAD_FOLDER, files[0])
-    model = (request.json or {}).get("model", "google/gemini-2.5-flash")
+    data = request.json or {}
+    model = data.get("model", "google/gemini-2.5-flash")
+    api_key = data.get("api_key")
+    if not api_key:
+        return jsonify({"error": "API Key is required"}), 400
+    
     try:
-        tree = build_tree(path, sid, model)
+        tree = build_tree(path, sid, model, api_key=api_key)
         with open(os.path.join(RESULTS_FOLDER, f"{sid}.json"), "w", encoding="utf-8") as f:
             json.dump(tree, f, indent=2, ensure_ascii=False)
         return jsonify({"tree": tree})
@@ -423,6 +429,9 @@ def query(sid):
     q = data.get("query", "").strip()
     if not q:
         return jsonify({"error": "No query"}), 400
+    api_key = data.get("api_key")
+    if not api_key:
+        return jsonify({"error": "API Key is required"}), 400
 
     tree_path = os.path.join(RESULTS_FOLDER, f"{sid}.json")
     if not os.path.exists(tree_path):
@@ -439,9 +448,9 @@ def query(sid):
     model = data.get("model", "google/gemini-2.5-flash")
 
     try:
-        context, path = tree_search(q, tree, pages, sid, model)
+        context, path = tree_search(q, tree, pages, sid, model, api_key=api_key)
         emit(sid, "status", {"msg": "✍️ Generating answer...", "phase": "answer"})
-        answer = generate_answer(q, context, path, model)
+        answer = generate_answer(q, context, path, model, api_key=api_key)
 
         # Collect referenced pages
         ref_pages = set()

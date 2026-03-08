@@ -52,6 +52,13 @@ function setupUpload() {
 }
 
 async function upload(file) {
+    const apiKey = document.getElementById("api-key-input").value.trim();
+    if (!apiKey) {
+        toast("Please provide an OpenRouter API key first", true);
+        return;
+    }
+    S.apiKey = apiKey;
+
     if (!file.name.toLowerCase().endsWith(".pdf")) {
         toast("Please upload a PDF file", true);
         return;
@@ -115,7 +122,7 @@ async function processDoc() {
         const r = await fetch(`/api/process/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "google/gemini-2.5-flash" }),
+            body: JSON.stringify({ model: "google/gemini-2.5-flash", api_key: S.apiKey }),
         });
         if (!r.ok) throw new Error((await r.json()).error || "Processing failed");
         const d = await r.json();
@@ -457,7 +464,7 @@ async function sendQuery() {
         const r = await fetch(`/api/query/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: q, model: "google/gemini-2.5-flash" }),
+            body: JSON.stringify({ query: q, model: "google/gemini-2.5-flash", api_key: S.apiKey }),
         });
         removeTyping(typId);
         if (!r.ok) throw new Error((await r.json()).error || "Query failed");
