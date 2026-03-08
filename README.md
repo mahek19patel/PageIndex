@@ -1,5 +1,7 @@
 # PageIndex RAG 🌲
 
+🚀 **Live Demo:** [https://pageindex-five.vercel.app/](https://pageindex-five.vercel.app/)
+
 A **vectorless, reasoning-based RAG system** that builds a hierarchical tree index from PDF documents and uses LLMs to reason over it for precise retrieval — inspired by [VectifyAI/PageIndex](https://github.com/VectifyAI/PageIndex).
 
 ## Features
@@ -19,12 +21,11 @@ cd PageIndex
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Set your OpenAI API key
-echo "OPENAI_API_KEY=your_key_here" > .env
-
-# 4. Run
+# 3. Run the application
 python app.py
-# Open http://localhost:5000
+
+# 4. Open http://localhost:5000
+# (You will be prompted to enter your OpenRouter API Key in the UI when uploading a PDF)
 ```
 
 ## How It Works
@@ -35,7 +36,7 @@ python app.py
 4. **Answer** → retrieved context is used to generate a precise, cited response  
 
 ## Tech Stack
-- **Backend**: Flask + OpenAI GPT-4o-mini + PyMuPDF  
+- **Backend**: Flask + OpenRouter (Google Gemini 2.5 Flash) + PyMuPDF  
 - **Frontend**: Vanilla JS + D3.js (tree visualization)  
 - **No vector DB required**
 
