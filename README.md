@@ -1,15 +1,15 @@
-# PageIndex RAG 🌲
+# PageIndex RAG 
 
-🚀 **Live Demo:** [https://pageindex-five.vercel.app/](https://pageindex-five.vercel.app/)
+ **Live Demo:** [https://pageindex-five.vercel.app/](https://pageindex-five.vercel.app/)
 
 A **vectorless, reasoning-based RAG system** that builds a hierarchical tree index from PDF documents and uses LLMs to reason over it for precise retrieval — inspired by [VectifyAI/PageIndex](https://github.com/VectifyAI/PageIndex).
 
 ## Features
-- 🌲 **Tree Indexing** — builds a hierarchical TOC tree from any PDF
-- 🧠 **LLM Reasoning** — AI navigates the tree to find relevant sections (no vectors!)
-- 🎯 **Precise Retrieval** — page-cited answers with full search path visibility
-- 👁️ **Visual Tree Search** — watch the AI reason through your document in real-time (D3.js)
-- ⚡ **50/50 Split UI** — interactive tree on the left, chat on the right
+-  **Tree Indexing** — builds a hierarchical TOC tree from any PDF
+-  **LLM Reasoning** — AI navigates the tree to find relevant sections (no vectors!)
+-  **Precise Retrieval** — page-cited answers with full search path visibility
+-  **Visual Tree Search** — watch the AI reason through your document in real-time (D3.js)
+-  **50/50 Split UI** — interactive tree on the left, chat on the right
 
 ## Setup
 
