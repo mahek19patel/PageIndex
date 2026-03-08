@@ -35,23 +35,19 @@
             <div class="logo">
                 <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
                     <rect width="32" height="32" rx="8" fill="url(#lg)" />
-                    <path d="M8 10h16M8 16h12M8 22h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
-                    <path d="M22 14l4 4-4 4" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"
+                    <path d="M8 10h16M8 16h12M8 22h8" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M22 14l4 4-4 4" stroke="#4b5563" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round" />
                     <defs>
                         <linearGradient id="lg" x1="0" y1="0" x2="32" y2="32">
-                            <stop offset="0%" stop-color="#6366f1" />
-                            <stop offset="100%" stop-color="#a855f7" />
+                            <stop offset="0%" stop-color="#e0e7ff" />
+                            <stop offset="100%" stop-color="#fae8ff" />
                         </linearGradient>
                     </defs>
                 </svg>
                 <span>PageIndex <em>RAG</em></span>
             </div>
-            <div class="badges">
-                <span class="badge b-purple">Vectorless</span>
-                <span class="badge b-blue">Reasoning</span>
-                <span class="badge b-green">Tree Search</span>
-            </div>
+
         </div>
         <div class="hdr-right">
             <div class="session-pill" id="session-pill" style="display:none">
@@ -91,15 +87,11 @@
                     </svg>
                 </div>
                 <h1>Document Intelligence<br><span class="glow">Without Vectors</span></h1>
-                <p class="sub">Upload a PDF and let tree-based reasoning find precise answers — like a human expert.
+                <p class="sub">Upload a PDF and let tree-based reasoning find precise answers like a human expert.
                 </p>
             </div>
 
-            <!-- API Key Input -->
-            <div class="api-key-container">
-                <input type="password" id="api-key-input" class="api-key-input"
-                    placeholder="Paste OpenRouter API Key to continue..." autocomplete="off">
-            </div>
+
 
             <!-- Upload zone -->
             <div class="drop-zone" id="drop-zone">
@@ -122,29 +114,6 @@
                 </div>
             </div>
 
-            <!-- Features -->
-            <div class="features">
-                <div class="feat">
-                    <div class="feat-icon">🌲</div>
-                    <h3>Tree Indexing</h3>
-                    <p>Builds a hierarchical TOC tree preserving document structure.</p>
-                </div>
-                <div class="feat">
-                    <div class="feat-icon">🧠</div>
-                    <h3>LLM Reasoning</h3>
-                    <p>AI reasons through the tree — not vague vector similarity.</p>
-                </div>
-                <div class="feat">
-                    <div class="feat-icon">🎯</div>
-                    <h3>Precise Retrieval</h3>
-                    <p>Human-like retrieval with page refs and full explainability.</p>
-                </div>
-                <div class="feat">
-                    <div class="feat-icon">👁️</div>
-                    <h3>Visual Search</h3>
-                    <p>Watch AI reason through your document tree in real-time.</p>
-                </div>
-            </div>
         </section>
 
         <!-- ── Processing View ── -->

@@ -52,12 +52,14 @@ function setupUpload() {
 }
 
 async function upload(file) {
-    const apiKey = document.getElementById("api-key-input").value.trim();
-    if (!apiKey) {
-        toast("Please provide an OpenRouter API key first", true);
-        return;
+    if (!S.apiKey) {
+        const key = prompt("Please enter your OpenRouter API Key to process this document:");
+        if (!key || !key.trim()) {
+            toast("An API key is required to process documents", true);
+            return;
+        }
+        S.apiKey = key.trim();
     }
-    S.apiKey = apiKey;
 
     if (!file.name.toLowerCase().endsWith(".pdf")) {
         toast("Please upload a PDF file", true);

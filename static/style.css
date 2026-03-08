@@ -78,9 +78,7 @@ body {
 }
 
 .loader-inner h2 span {
-    background: var(--accent), var(--accent2));
-    
-    
+    color: var(--accent);
 }
 
 .loader-inner p {
@@ -162,9 +160,7 @@ header {
 
 .logo em {
     font-style: normal;
-    background: var(--accent), var(--accent2));
-    
-    
+    color: var(--accent);
 }
 
 .badges {
@@ -258,54 +254,43 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 24px 60px;
+    padding: 16px 24px;
 }
 
 .hero {
     text-align: center;
-    margin-bottom: 32px;
+    margin-top: auto;
+    margin-bottom: 24px;
 }
 
 .hero h1 {
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -.02em;
+    font-size: 2.3rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--text);
 }
 
 .glow {
-    background: var(--accent), var(--accent2), var(--accent3));
-    
-    
-    animation: glowShift 4s ease infinite;
-    background-size: 200% 200%;
+    color: var(--accent);
 }
 
-@keyframes glowShift {
 
-    0%,
-    100% {
-        background-position: 0 50%
-    }
-
-    50% {
-        background-position: 100% 50%
-    }
-}
 
 .sub {
     color: var(--text2);
-    font-size: 1rem;
-    max-width: 520px;
+    font-size: 0.95rem;
+    max-width: 500px;
     margin: 12px auto 0;
-    line-height: 1.6;
+    line-height: 1.5;
+    font-weight: 400;
 }
 
 /* Hero tree animation */
 .hero-anim {
-    width: 320px;
-    height: 220px;
-    margin: 0 auto 20px;
+    width: 250px;
+    height: 180px;
+    margin: 0 auto 12px;
 }
 
 .hero-tree {
@@ -393,11 +378,11 @@ main {
     border: 2px dashed var(--border);
     border-radius: var(--radius-lg);
     background: var(--bg2);
-    padding: 40px 24px;
+    padding: 24px;
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
-    margin-bottom: 20px;
+    margin-bottom: auto;
 }
 
 .drop-zone:hover,
@@ -438,7 +423,7 @@ main {
 .prog-fill {
     height: 100%;
     width: 0;
-    background: var(--accent), var(--accent2));
+    background: var(--accent);
     border-radius: 2px;
     transition: width .4s;
 }
@@ -449,7 +434,7 @@ main {
 }
 
 .btn-primary {
-    background: var(--accent), var(--accent2));
+    color: var(--accent);
     border: none;
     color: #ffffff;
     font-weight: 600;
@@ -714,14 +699,11 @@ main {
     white-space: nowrap;
 }
 
-/* Tree viewport */
 .tree-viewport {
     flex: 1;
     position: relative;
     overflow: hidden;
-    background:
-        var(--bg2), transparent 60%),
-        var(--bg);
+    background: var(--bg);
 }
 
 .tree-canvas {
@@ -759,36 +741,30 @@ main {
 
 .tree-node.searching circle {
     fill: var(--amber) !important;
-    filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.2));
     animation: searchPulse 1s infinite alternate ease-in-out;
 }
 
 @keyframes searchPulse {
     0% {
-        filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.2));
         transform: scale(1);
     }
 
     100% {
-        filter: drop-shadow(0 0 28px rgba(245, 158, 11, 0.2));
         transform: scale(1.4);
     }
 }
 
 .tree-node.found circle {
     fill: var(--green) !important;
-    filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.2));
     animation: foundPulse 1.5s infinite alternate ease-in-out;
 }
 
 @keyframes foundPulse {
     0% {
-        filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.2));
         transform: scale(1);
     }
 
     100% {
-        filter: drop-shadow(0 0 28px rgba(34, 197, 94, 0.2));
         transform: scale(1.4);
     }
 }
@@ -989,8 +965,9 @@ main {
 }
 
 .msg-user .bubble {
-    background: var(--accent), var(--accent2));
-    color: #ffffff;
+    background: var(--accent-light);
+    border-color: var(--accent-light);
+    color: var(--text);
     border-radius: 16px 16px 4px 16px;
 }
 
@@ -1150,7 +1127,7 @@ main {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: var(--accent), var(--accent2));
+    color: var(--accent);
     border: none;
     color: #ffffff;
     display: flex;
@@ -1286,9 +1263,9 @@ main {
 .stat-val {
     font-size: 1.6rem;
     font-weight: 800;
-    background: var(--accent), var(--accent2));
-    
-    
+    color: var(--accent);
+
+
 }
 
 .stat-lbl {
@@ -1330,7 +1307,7 @@ main {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--accent), var(--accent2));
+    color: var(--accent);
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -1487,8 +1464,39 @@ main {
         display: none;
     }
 
+    .view-upload {
+        padding: 12px;
+    }
+
+    .hero {
+        margin-top: auto;
+        margin-bottom: 12px;
+    }
+
     .hero h1 {
-        font-size: 1.6rem;
+        font-size: 1.65rem;
+    }
+
+    .hero-anim {
+        width: 220px;
+        height: 140px;
+        margin: 0 auto 8px;
+    }
+
+    .sub {
+        font-size: 0.9rem;
+        margin: 8px auto 0;
+    }
+
+    .drop-zone {
+        padding: 24px 12px;
+        max-width: 90vw;
+    }
+
+    .dz-content svg {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 8px;
     }
 
     .stats-grid {
