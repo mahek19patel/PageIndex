@@ -52,27 +52,34 @@ def extract_pdf(path):
     doc.close()
     return pages
 
-def call_llm(prompt, model="gemini-2.5-flash", temperature=0):
-    """Call Google Gemini API."""
-    from google import genai
-    from google.genai import types
-    key = os.getenv("GEMINI_API_KEY")
+def call_llm(prompt, model="google/google/gemini-2.5-flash", temperature=0):
+    """Call OpenRouter API."""
+    import openai
+    key = os.getenv("OPENROUTER_API_KEY")
     if not key:
-        raise ValueError("Set GEMINI_API_KEY in .env")
+        raise ValueError("Set OPENROUTER_API_KEY in .env")
 
-    client = genai.Client(api_key=key)
+    client = openai.OpenAI(
+        api_key=key,
+        base_url="https://openrouter.ai/api/v1",
+    )
 
     for attempt in range(4):
         try:
-            r = client.models.generate_content(
+            r = client.chat.completions.create(
                 model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=temperature),
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=4000,
             )
-            return r.text
+            return r.choices[0].message.content
         except Exception as e:
-            log.error(f"LLM error attempt {attempt+1}: {e}")
-            if attempt < 3:
+            err_str = str(e)
+            log.error(f"LLM error attempt {attempt+1}: {err_str}")
+            if "429" in err_str or "exhausted" in err_str.lower() or "quota" in err_str.lower():
+                log.info("Rate limit exceeded, sleeping for 5 seconds...")
+                time.sleep(5)
+            elif attempt < 3:
                 time.sleep(2 ** attempt)
             else:
                 raise
@@ -101,7 +108,7 @@ def parse_json(text):
 
 
 # ── Tree Builder ──────────────────────────────────────────────────
-def build_tree(pdf_path, sid, model="gemini-2.5-flash"):
+def build_tree(pdf_path, sid, model="google/gemini-2.5-flash"):
     """Build PageIndex hierarchical tree from a PDF document."""
     emit(sid, "status", {"msg": "📄 Extracting PDF text...", "phase": "extract"})
     pages = extract_pdf(pdf_path)
@@ -206,7 +213,9 @@ def _enrich(nodes, pages, model, sid):
                         model=model,
                     )
                     node["summary"] = r.strip()
-                except:
+                except Exception as err:
+                    if "429" in str(err) or "exhausted" in str(err).lower() or "quota" in str(err).lower():
+                        raise err # Re-raise rate limits so it can backoff
                     node["summary"] = f"Pages {s+1}–{e}"
             else:
                 node["summary"] = f"Pages {s+1}–{e}"
@@ -227,7 +236,7 @@ def _find_node(structure, nid):
     return None
 
 
-def tree_search(query, tree, pages, sid, model="gemini-2.5-flash"):
+def tree_search(query, tree, pages, sid, model="google/gemini-2.5-flash"):
     """Reasoning-based tree search: LLM navigates hierarchy to find relevant sections."""
     structure = tree.get("structure", [])
     if not structure:
@@ -335,7 +344,7 @@ Which subsections are relevant? Return JSON:
     return context, search_path
 
 
-def generate_answer(query, context, path, model="gemini-2.5-flash"):
+def generate_answer(query, context, path, model="google/gemini-2.5-flash"):
     """Generate a cited answer from retrieved context."""
     ctx = "\n\n".join(context[:5])[:8000]
     path_desc = "\n".join([f"- {p['title']} (Node {p['node_id']})" for p in path])
@@ -353,7 +362,7 @@ Question: {query}
 Rules:
 - Cite pages using [Page X]
 - If info is not found, say so
-- Be thorough but concise
+- Provide a detailed and comprehensive explanation. Be generous with the amount of information you provide. Use bullet points if applicable to make it more readable and elaborate fully on the user's question.
 
 Answer:"""
     return call_llm(prompt, model=model)
@@ -391,7 +400,7 @@ def process(sid):
     if not files:
         return jsonify({"error": "File not found"}), 404
     path = os.path.join(UPLOAD_FOLDER, files[0])
-    model = (request.json or {}).get("model", "gemini-2.5-flash")
+    model = (request.json or {}).get("model", "google/gemini-2.5-flash")
     try:
         tree = build_tree(path, sid, model)
         with open(os.path.join(RESULTS_FOLDER, f"{sid}.json"), "w", encoding="utf-8") as f:
@@ -421,7 +430,7 @@ def query(sid):
         return jsonify({"error": "PDF not found"}), 404
 
     pages = extract_pdf(os.path.join(UPLOAD_FOLDER, files[0]))
-    model = data.get("model", "gemini-2.5-flash")
+    model = data.get("model", "google/gemini-2.5-flash")
 
     try:
         context, path = tree_search(q, tree, pages, sid, model)

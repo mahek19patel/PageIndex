@@ -1,6 +1,6 @@
 flask==3.1.1
 flask-cors==5.0.1
-google-genai==0.3.0
+openai
 pymupdf==1.26.4
 python-dotenv==1.1.0
 werkzeug==3.1.3

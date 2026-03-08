@@ -115,7 +115,7 @@ async function processDoc() {
         const r = await fetch(`/api/process/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "gemini-2.5-flash" }),
+            body: JSON.stringify({ model: "google/gemini-2.5-flash" }),
         });
         if (!r.ok) throw new Error((await r.json()).error || "Processing failed");
         const d = await r.json();
@@ -347,6 +347,17 @@ function highlightNode(nid, status) {
     if (!node.empty()) {
         node.classed("searching", status === "searching");
         node.classed("found", status === "found");
+
+        const circle = node.select("circle");
+
+        if (status === "searching" || status === "found") {
+            // CSS classes .searching and .found will handle animation via transform scale now.
+        } else {
+            // Reset to default
+            const originalR = node.node().__data__.depth === 0 ? 14 : (node.node().__data__.children ? 9 : 6);
+            circle.transition().duration(200).attr("r", originalR);
+        }
+
         if (status === "found" || status === "searching") {
             d3.selectAll(".tree-link").each(function (d) {
                 if (d.target.data.node_id === nid) d3.select(this).classed("highlighted", true);
@@ -356,7 +367,11 @@ function highlightNode(nid, status) {
 }
 
 function resetHighlights() {
-    d3.selectAll(".tree-node").classed("searching", false).classed("found", false);
+    d3.selectAll(".tree-node").classed("searching", false).classed("found", false).each(function () {
+        const nodeData = d3.select(this).node().__data__;
+        const originalR = nodeData.depth === 0 ? 14 : (nodeData.children ? 9 : 6);
+        d3.select(this).select("circle").transition().duration(200).attr("r", originalR);
+    });
     d3.selectAll(".tree-link").classed("highlighted", false);
 }
 
@@ -442,7 +457,7 @@ async function sendQuery() {
         const r = await fetch(`/api/query/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: q, model: "gemini-2.5-flash" }),
+            body: JSON.stringify({ query: q, model: "google/gemini-2.5-flash" }),
         });
         removeTyping(typId);
         if (!r.ok) throw new Error((await r.json()).error || "Query failed");
