@@ -19,14 +19,20 @@ load_dotenv()
 app = Flask(__name__, static_folder="static")
 CORS(app)
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
-RESULTS_FOLDER = os.path.join(os.path.dirname(__file__), "results")
+try:
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
+    RESULTS_FOLDER = os.path.join(os.path.dirname(__file__), "results")
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
+except OSError:
+    UPLOAD_FOLDER = "/tmp/uploads"
+    RESULTS_FOLDER = "/tmp/results"
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
+
 ALLOWED_EXT = {"pdf"}
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -46,10 +52,10 @@ def emit(sid, etype, data):
 
 def extract_pdf(path):
     """Extract text from each page of a PDF."""
-    import pymupdf
-    doc = pymupdf.open(path)
-    pages = [doc[i].get_text() for i in range(len(doc))]
-    doc.close()
+    import pypdf
+    with open(path, "rb") as f:
+        reader = pypdf.PdfReader(f)
+        pages = [page.extract_text() or "" for page in reader.pages]
     return pages
 
 def call_llm(prompt, model="google/google/gemini-2.5-flash", temperature=0):
