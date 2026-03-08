@@ -52,35 +52,30 @@ def extract_pdf(path):
     doc.close()
     return pages
 
-
-def call_llm(prompt, model="grok-2-latest", temperature=0):
-    """Call Grok (xAI) API — OpenAI-compatible."""
-    import openai
-    key = os.getenv("GROK_API_KEY") or os.getenv("XAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+def call_llm(prompt, model="gemini-2.5-flash", temperature=0):
+    """Call Google Gemini API."""
+    from google import genai
+    from google.genai import types
+    key = os.getenv("GEMINI_API_KEY")
     if not key:
-        raise ValueError("Set GROK_API_KEY in .env  (get one free at console.x.ai)")
+        raise ValueError("Set GEMINI_API_KEY in .env")
 
-    # Use Grok's OpenAI-compatible endpoint
-    client = openai.OpenAI(
-        api_key=key,
-        base_url="https://api.x.ai/v1",
-    )
+    client = genai.Client(api_key=key)
 
     for attempt in range(4):
         try:
-            r = client.chat.completions.create(
+            r = client.models.generate_content(
                 model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=temperature),
             )
-            return r.choices[0].message.content
+            return r.text
         except Exception as e:
             log.error(f"LLM error attempt {attempt+1}: {e}")
             if attempt < 3:
                 time.sleep(2 ** attempt)
             else:
                 raise
-
 
 def parse_json(text):
     """Robustly extract JSON from LLM response."""
@@ -106,7 +101,7 @@ def parse_json(text):
 
 
 # ── Tree Builder ──────────────────────────────────────────────────
-def build_tree(pdf_path, sid, model="gpt-4o-mini"):
+def build_tree(pdf_path, sid, model="gemini-2.5-flash"):
     """Build PageIndex hierarchical tree from a PDF document."""
     emit(sid, "status", {"msg": "📄 Extracting PDF text...", "phase": "extract"})
     pages = extract_pdf(pdf_path)
@@ -232,7 +227,7 @@ def _find_node(structure, nid):
     return None
 
 
-def tree_search(query, tree, pages, sid, model="gpt-4o-mini"):
+def tree_search(query, tree, pages, sid, model="gemini-2.5-flash"):
     """Reasoning-based tree search: LLM navigates hierarchy to find relevant sections."""
     structure = tree.get("structure", [])
     if not structure:
@@ -340,7 +335,7 @@ Which subsections are relevant? Return JSON:
     return context, search_path
 
 
-def generate_answer(query, context, path, model="gpt-4o-mini"):
+def generate_answer(query, context, path, model="gemini-2.5-flash"):
     """Generate a cited answer from retrieved context."""
     ctx = "\n\n".join(context[:5])[:8000]
     path_desc = "\n".join([f"- {p['title']} (Node {p['node_id']})" for p in path])
@@ -396,7 +391,7 @@ def process(sid):
     if not files:
         return jsonify({"error": "File not found"}), 404
     path = os.path.join(UPLOAD_FOLDER, files[0])
-    model = (request.json or {}).get("model", "gpt-4o-mini")
+    model = (request.json or {}).get("model", "gemini-2.5-flash")
     try:
         tree = build_tree(path, sid, model)
         with open(os.path.join(RESULTS_FOLDER, f"{sid}.json"), "w", encoding="utf-8") as f:
@@ -426,7 +421,7 @@ def query(sid):
         return jsonify({"error": "PDF not found"}), 404
 
     pages = extract_pdf(os.path.join(UPLOAD_FOLDER, files[0]))
-    model = data.get("model", "gpt-4o-mini")
+    model = data.get("model", "gemini-2.5-flash")
 
     try:
         context, path = tree_search(q, tree, pages, sid, model)

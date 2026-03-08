@@ -115,7 +115,7 @@ async function processDoc() {
         const r = await fetch(`/api/process/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "gpt-4o-mini" }),
+            body: JSON.stringify({ model: "gemini-2.5-flash" }),
         });
         if (!r.ok) throw new Error((await r.json()).error || "Processing failed");
         const d = await r.json();
@@ -442,7 +442,7 @@ async function sendQuery() {
         const r = await fetch(`/api/query/${S.sid}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: q, model: "gpt-4o-mini" }),
+            body: JSON.stringify({ query: q, model: "gemini-2.5-flash" }),
         });
         removeTyping(typId);
         if (!r.ok) throw new Error((await r.json()).error || "Query failed");
