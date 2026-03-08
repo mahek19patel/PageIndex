@@ -1,4 +1,4 @@
-# PageIndex RAG 
+# PageIndex 
 
  **Live Demo:** [https://pageindex-five.vercel.app/](https://pageindex-five.vercel.app/)
 
