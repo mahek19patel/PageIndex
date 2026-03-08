@@ -53,13 +53,19 @@ def extract_pdf(path):
     return pages
 
 
-def call_llm(prompt, model="gpt-4o-mini", temperature=0):
-    """Call OpenAI with retries."""
+def call_llm(prompt, model="grok-2-latest", temperature=0):
+    """Call Grok (xAI) API — OpenAI-compatible."""
     import openai
-    key = os.getenv("OPENAI_API_KEY") or os.getenv("CHATGPT_API_KEY")
+    key = os.getenv("GROK_API_KEY") or os.getenv("XAI_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not key:
-        raise ValueError("Set OPENAI_API_KEY in .env")
-    client = openai.OpenAI(api_key=key)
+        raise ValueError("Set GROK_API_KEY in .env  (get one free at console.x.ai)")
+
+    # Use Grok's OpenAI-compatible endpoint
+    client = openai.OpenAI(
+        api_key=key,
+        base_url="https://api.x.ai/v1",
+    )
+
     for attempt in range(4):
         try:
             r = client.chat.completions.create(
