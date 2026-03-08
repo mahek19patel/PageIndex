@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageIndex RAG — Tree-Based Document Intelligence</title>
+    <meta name="description"
+        content="Upload PDFs and query them with PageIndex's tree-based, reasoning-driven RAG system. No vectors, no chunking — just intelligent document navigation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- ═══ Loader ═══ -->
+    <div id="loader" class="loader">
+        <div class="loader-inner">
+            <div class="loader-rings">
+                <div class="ring r1"></div>
+                <div class="ring r2"></div>
+                <div class="ring r3"></div>
+            </div>
+            <h2>PageIndex <span>RAG</span></h2>
+            <p>Initializing tree engine…</p>
+        </div>
+    </div>
+
+    <!-- ═══ Header ═══ -->
+    <header id="header">
+        <div class="hdr-left">
+            <div class="logo">
+                <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#lg)" />
+                    <path d="M8 10h16M8 16h12M8 22h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M22 14l4 4-4 4" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="lg" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#6366f1" />
+                            <stop offset="100%" stop-color="#a855f7" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>PageIndex <em>RAG</em></span>
+            </div>
+            <div class="badges">
+                <span class="badge b-purple">Vectorless</span>
+                <span class="badge b-blue">Reasoning</span>
+                <span class="badge b-green">Tree Search</span>
+            </div>
+        </div>
+        <div class="hdr-right">
+            <div class="session-pill" id="session-pill" style="display:none">
+                <span class="dot-live"></span>
+                <span id="session-name">—</span>
+            </div>
+            <button class="icon-btn" id="btn-info" title="How it works">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══ Main ═══ -->
+    <main id="main">
+
+        <!-- ── Upload View ── -->
+        <section id="view-upload" class="view-upload">
+            <div class="hero">
+                <div class="hero-anim">
+                    <svg class="hero-tree" viewBox="0 0 320 220">
+                        <line x1="160" y1="30" x2="80" y2="100" class="anim-line" style="--d:.3s" />
+                        <line x1="160" y1="30" x2="240" y2="100" class="anim-line" style="--d:.5s" />
+                        <line x1="80" y1="100" x2="40" y2="170" class="anim-line" style="--d:.8s" />
+                        <line x1="80" y1="100" x2="120" y2="170" class="anim-line" style="--d:1s" />
+                        <line x1="240" y1="100" x2="200" y2="170" class="anim-line" style="--d:1.2s" />
+                        <line x1="240" y1="100" x2="280" y2="170" class="anim-line" style="--d:1.4s" />
+                        <circle cx="160" cy="30" r="10" class="anim-dot root" style="--d:0s" />
+                        <circle cx="80" cy="100" r="8" class="anim-dot" style="--d:.3s" />
+                        <circle cx="240" cy="100" r="8" class="anim-dot" style="--d:.5s" />
+                        <circle cx="40" cy="170" r="6" class="anim-dot leaf" style="--d:.8s" />
+                        <circle cx="120" cy="170" r="6" class="anim-dot leaf" style="--d:1s" />
+                        <circle cx="200" cy="170" r="6" class="anim-dot leaf" style="--d:1.2s" />
+                        <circle cx="280" cy="170" r="6" class="anim-dot leaf" style="--d:1.4s" />
+                    </svg>
+                </div>
+                <h1>Document Intelligence<br><span class="glow">Without Vectors</span></h1>
+                <p class="sub">Upload a PDF and let tree-based reasoning find precise answers — like a human expert.
+                </p>
+            </div>
+
+            <!-- Upload zone -->
+            <div class="drop-zone" id="drop-zone">
+                <input type="file" id="file-input" accept=".pdf" hidden>
+                <div class="dz-content" id="dz-content">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p>Drop your PDF here or <span class="browse">browse</span></p>
+                    <p class="hint">Up to 50 MB</p>
+                </div>
+                <div class="dz-progress" id="dz-progress" style="display:none">
+                    <div class="prog-bar">
+                        <div class="prog-fill" id="prog-fill"></div>
+                    </div>
+                    <p id="prog-text">Uploading…</p>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="features">
+                <div class="feat">
+                    <div class="feat-icon">🌲</div>
+                    <h3>Tree Indexing</h3>
+                    <p>Builds a hierarchical TOC tree preserving document structure.</p>
+                </div>
+                <div class="feat">
+                    <div class="feat-icon">🧠</div>
+                    <h3>LLM Reasoning</h3>
+                    <p>AI reasons through the tree — not vague vector similarity.</p>
+                </div>
+                <div class="feat">
+                    <div class="feat-icon">🎯</div>
+                    <h3>Precise Retrieval</h3>
+                    <p>Human-like retrieval with page refs and full explainability.</p>
+                </div>
+                <div class="feat">
+                    <div class="feat-icon">👁️</div>
+                    <h3>Visual Search</h3>
+                    <p>Watch AI reason through your document tree in real-time.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Processing View ── -->
+        <section id="view-processing" class="view-processing" style="display:none">
+            <div class="proc-card">
+                <div class="proc-spinner">
+                    <div class="pulse p1"></div>
+                    <div class="pulse p2"></div>
+                    <div class="pulse p3"></div>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                </div>
+                <h2 id="proc-title">Building Document Tree…</h2>
+                <p id="proc-msg">Analyzing structure with AI reasoning</p>
+                <div class="steps" id="proc-steps"></div>
+            </div>
+        </section>
+
+        <!-- ── App View (50/50 split) ── -->
+        <section id="view-app" class="view-app" style="display:none">
+
+            <!-- LEFT: Tree Visualization -->
+            <div class="panel left-panel" id="left-panel">
+                <div class="panel-hdr">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="5" r="3" />
+                            <line x1="12" y1="8" x2="12" y2="14" />
+                            <line x1="12" y1="14" x2="6" y2="20" />
+                            <line x1="12" y1="14" x2="18" y2="20" />
+                            <circle cx="6" cy="20" r="2" />
+                            <circle cx="18" cy="20" r="2" />
+                        </svg>
+                        Document Tree
+                    </div>
+                    <div class="panel-actions">
+                        <button class="sm-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+                        <button class="sm-btn" id="btn-zoom-reset" title="Reset">⟲</button>
+                        <button class="sm-btn" id="btn-zoom-in" title="Zoom In">+</button>
+                    </div>
+                </div>
+                <div class="tree-viewport" id="tree-viewport">
+                    <div class="tree-canvas" id="tree-canvas"></div>
+                </div>
+                <div class="legend">
+                    <span><i class="ldot idle"></i>Idle</span>
+                    <span><i class="ldot searching"></i>Searching</span>
+                    <span><i class="ldot found"></i>Found</span>
+                    <span><i class="ldot leaf"></i>Leaf</span>
+                </div>
+            </div>
+
+            <!-- Resizer -->
+            <div class="resizer" id="resizer"></div>
+
+            <!-- RIGHT: Chat & Tabs -->
+            <div class="panel right-panel" id="right-panel">
+                <div class="panel-hdr">
+                    <div class="panel-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        Ask & Explore
+                    </div>
+                    <span class="doc-label" id="doc-label"></span>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="chat">💬 Chat</button>
+                    <button class="tab" data-tab="log">🔍 Search Log</button>
+                    <button class="tab" data-tab="struct">📄 Structure</button>
+                    <button class="tab" data-tab="stats">📊 Stats</button>
+                </div>
+
+                <!-- Tab panes -->
+                <div class="panes">
+                    <!-- Chat -->
+                    <div class="pane active" id="pane-chat">
+                        <div class="messages" id="messages">
+                            <div class="welcome">
+                                <div class="w-icon">🌲</div>
+                                <h3>Ready to explore!</h3>
+                                <p>Ask any question about your document. I'll navigate the tree to find precise answers.
+                                </p>
+                                <div class="suggestions" id="suggestions"></div>
+                            </div>
+                        </div>
+                        <div class="input-area">
+                            <div class="input-wrap">
+                                <textarea id="q-input" placeholder="Ask about your document…" rows="1"></textarea>
+                                <button id="btn-send" class="send-btn" disabled>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <line x1="22" y1="2" x2="11" y2="13" />
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="input-hint">Enter to send · Shift+Enter for new line</p>
+                        </div>
+                    </div>
+
+                    <!-- Search Log -->
+                    <div class="pane" id="pane-log">
+                        <div class="scroll-pane" id="log-content">
+                            <div class="empty-msg">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                                <p>Search logs appear after you ask a question.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Structure -->
+                    <div class="pane" id="pane-struct">
+                        <div class="scroll-pane" id="struct-content"></div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="pane" id="pane-stats">
+                        <div class="scroll-pane">
+                            <div class="stats-grid">
+                                <div class="stat">
+                                    <div class="stat-val" id="s-pages">0</div>
+                                    <div class="stat-lbl">Pages</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-val" id="s-nodes">0</div>
+                                    <div class="stat-lbl">Tree Nodes</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-val" id="s-depth">0</div>
+                                    <div class="stat-lbl">Max Depth</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-val" id="s-queries">0</div>
+                                    <div class="stat-lbl">Queries</div>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>How PageIndex Works</h3>
+                                <div class="flow">
+                                    <div class="flow-step">
+                                        <div class="flow-n">1</div>
+                                        <div>
+                                            <h4>📄 Upload</h4>
+                                            <p>PDF text extracted page by page</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arr">→</div>
+                                    <div class="flow-step">
+                                        <div class="flow-n">2</div>
+                                        <div>
+                                            <h4>🌲 Tree Build</h4>
+                                            <p>LLM builds hierarchical index</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arr">→</div>
+                                    <div class="flow-step">
+                                        <div class="flow-n">3</div>
+                                        <div>
+                                            <h4>🔍 Tree Search</h4>
+                                            <p>LLM reasons through tree</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arr">→</div>
+                                    <div class="flow-step">
+                                        <div class="flow-n">4</div>
+                                        <div>
+                                            <h4>✍️ Answer</h4>
+                                            <p>Precise, cited response</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Traditional RAG vs PageIndex</h3>
+                                <table class="cmp-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>Traditional</th>
+                                            <th>PageIndex</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Retrieval</td>
+                                            <td>Vector Similarity</td>
+                                            <td class="hi">LLM Reasoning</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Processing</td>
+                                            <td>Chunk + Embed</td>
+                                            <td class="hi">Tree Indexing</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Structure</td>
+                                            <td>❌ Lost</td>
+                                            <td class="hi">✅ Preserved</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Explainability</td>
+                                            <td>❌ Opaque</td>
+                                            <td class="hi">✅ Full path</td>
+                                        </tr>
+                                        <tr>
+                                            <td>External DB</td>
+                                            <td>Vector DB</td>
+                                            <td class="hi">None needed</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══ Info Modal ═══ -->
+    <div class="modal-bg" id="modal" style="display:none">
+        <div class="modal-card">
+            <div class="modal-top">
+                <h2>How PageIndex RAG Works</h2>
+                <button class="icon-btn" id="btn-close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>PageIndex is a <strong>vectorless, reasoning-based RAG</strong> system inspired by AlphaGo:</p>
+                <ol>
+                    <li><strong>Builds a Tree Index</strong> — hierarchical TOC preserving document structure.</li>
+                    <li><strong>Reasons Through the Tree</strong> — LLM navigates using reasoning, not similarity.</li>
+                    <li><strong>Retrieves Precise Context</strong> — exact pages and sections with explainability.</li>
+                    <li><strong>Generates Answers</strong> — accurate, well-cited responses from retrieved context.</li>
+                </ol>
+                <p>Achieves <strong>98.7% accuracy</strong> on FinanceBench benchmark.</p>
+                <a href="https://github.com/VectifyAI/PageIndex" target="_blank" class="btn-primary"
+                    style="display:inline-block;margin-top:12px">View on GitHub →</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

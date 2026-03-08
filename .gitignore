@@ -1,0 +1,18 @@
+# Environment – keep API keys out of git
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Uploaded PDFs and generated results
+uploads/
+results/
+
+# OS
+.DS_Store
+Thumbs.db
